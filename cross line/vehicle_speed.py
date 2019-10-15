@@ -1,24 +1,11 @@
 import numpy as np
-import os
 import cv2
-import matplotlib.pyplot as plt
-import cPickle
 import math
-import scipy.ndimage
-import scipy.stats
-import scipy.optimize
-import matplotlib.pyplot as plt
-import json
-import scipy.stats
-from tabulate import tabulate
-import operator
-import itertools
 
 def isPointBetweenLines(p, l1, l2):
     return np.dot(p,l1)*np.dot(p,l2)*np.dot(l1[0:2],l2[0:2]) <= 0
 def getLaneForPoint(p, lines):
     for i in xrange(len(lines)-1):
-        print(i)
         if isPointBetweenLines(p, lines[i], lines[i+1]):
             return i
     return None
@@ -67,14 +54,7 @@ def camera_calibration(vp1,vp2,pp):
 
 def calculateSpeeds(loc1, loc2, fps, scale, frame_diff, tuple_cam):
     vp1, vp2, vp3, pp, roadPlane, focal = tuple_cam
-    laneDivLines = gtData["laneDivLines"]
-    laneDivLines[3]=np.array([0.57,-1,-47.39])
-    fps = gtData["fps"]
-    errors = 0
-    count_car = 0
-
     projector = lambda p: getWorldCoordinagesOnRoadPlane(p, focal, roadPlane, pp)
-
     points = map(lambda p: np.array([p[0],p[1],1]), loc1, loc2)
     points = map(projector, points)
     passedDistance = scale*np.linalg.norm(points[-1]-points[-2])

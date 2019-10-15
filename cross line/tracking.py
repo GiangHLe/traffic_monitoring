@@ -1,29 +1,41 @@
 from sort import *
 from utils import *
-from yolo import * 
+from vehicle import *
+
+from keras import backend as K
+from keras.models import load_model
+from keras.layers import Input
+from PIL import Image, ImageFont, ImageDraw
+
+import os
+import utilities
+import numpy as np
 import cv2
 
-def bbox2necess(bbox,frame,shape):
+def bbox2necess(image, bbox,frame,shape):
     """
-    Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
-    [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-    the aspect ratio
+    return a list, each element is a list contain [posX,posY,ID,frame_no, image bbox]
     """
+    print(image.shape)
     final_res=[]
     width = shape[0]
     height = shape[1]
     for box in bbox:
-        res=[]
-        # w = box[2]-box[0]
-        # h = box[3]-box[1]
-        x = ((box[0]+w/2.)/416)*width
-        y = ((box[1]+h/2.)/410)*height
-        res=np.array([x,y,(box[4]),frame])
+        x = (box[0]/416)*width
+        y = (box[1]/416)*height
+        x_plus_w = box[2]
+        y_plus_h = box[3]
+        bbox2d = image[round(x):round(x_plus_w),round(y):round(y_plus_h),:]
+        x_centroid = ((box[0]+w/2.)/416)*width
+        y_centroid = ((box[1]+h/2.)/410)*height
+        res=[x_centroid,y_centroid,(box[4]),frame,bbox2d]
         final_res.append(res)
-    return np.array(final_res)
+    return final_res
 
 
-def detect_video(yolo, video_type= 'local', video_path, output_path="", thresh_frame = 10 ):
+def detect_video(yolo, video_type, video_path, output_path, 
+                    scale, vp1, vp2, pp, allow_speed, allow_lanes,
+                    all_lanes, thresh_frame):
     '''
     - Input:
         + yolo: yolo model
@@ -33,6 +45,9 @@ def detect_video(yolo, video_type= 'local', video_path, output_path="", thresh_f
     - Output:
         + A tensor [x,y,ID,frame_num]
     '''
+    # these thing should append into data file
+    tuple_cam = computeCameraCalibration(vp1,vp2,pp)
+    
 
     vid = cv2.VideoCapture(video_path)
     if not vid.isOpened():
@@ -51,13 +66,13 @@ def detect_video(yolo, video_type= 'local', video_path, output_path="", thresh_f
 
     tracker=Sort()
     frame_num=0
-    result_track_all_frames=[]
+    all_vehicle={}
     ignore_set = set()
     while True:
-        return_value, frame = vid.read()
+        return_value, pic = vid.read()
         if not return_value:
             break
-        image = Image.fromarray(frame)
+        image = Image.fromarray(pic)
         if frame_num%thresh_frame==0:
             if yolo.model_image_size != (None, None):
                 assert yolo.model_image_size[0]%32 == 0, 'Multiples of 32 required'
@@ -71,9 +86,8 @@ def detect_video(yolo, video_type= 'local', video_path, output_path="", thresh_f
             image_data /= 255.
             image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
             
-            '''
-            detect for bbox right here
-            '''
+            # detect for bbox right here
+
             out_boxes, out_scores, out_classes = yolo.sess.run(
                 [yolo.boxes, yolo.scores, yolo.classes],
                 feed_dict={
@@ -110,10 +124,25 @@ def detect_video(yolo, video_type= 'local', video_path, output_path="", thresh_f
             bf=out_boxes
             res_track=tracker.update(np.array(out_boxes))
             # res_track return [x,y, x+w, x+y, ID]
-            result_track_all_frames.append(bbox2necess(res_track,frame_num,video_size))
+            one_frame = bbox2necess(image = pic, bbox = res_track,frame =frame_num,
+                                        shape = video_size)
+            for vehicle in one_frame:
+                # [posX,posY,ID,frame_no, image bbox]
+                ID =  one_frame[2]
+                centroid = [one_frame[0],one_frame[1]]
+                frame_appear = one_frame[3]
+                bbox = one_frame[4]
+                
+                mode = 'speed'
+                if ID in ignore_set:
+                    continue
+                if ID not in all_vehicle.keys():
+                    all_vehicle[ID] = Vehicle(ID, centroid, frame_appear, fps, scale,
+                                                tuple_cam, bbox, allow_speed, allow_lanes, 
+                                                mode = mode)
+                else:
+                    all_vehicle[ID].update_for_highway(bbox, centroid, frame_appear)
             frame_num+=1
-        
-    return np.array(result_track_all_frames)
 
 
 
