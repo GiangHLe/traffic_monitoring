@@ -5,7 +5,7 @@ import math
 def isPointBetweenLines(p, l1, l2):
     return np.dot(p,l1)*np.dot(p,l2)*np.dot(l1[0:2],l2[0:2]) <= 0
 def getLaneForPoint(p, lines):
-    for i in xrange(len(lines)-1):
+    for i in range(len(lines)-1):
         if isPointBetweenLines(p, lines[i], lines[i+1]):
             return i
     return None

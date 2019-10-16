@@ -26,7 +26,7 @@ class Vehicle:
         self.centroids = [centroid, None]
         self.frame = [frame_appear, None]
         self.bbox  = bbox # image
-        self.lane = getLaneForPoint[centroid]
+        self.lane = getLaneForPoint(centroid,all_lanes)
         self.catch_cross_lane = False
         self.fps = fps
         self.scale = scale
@@ -82,13 +82,13 @@ class Vehicle:
         self.centroids[0] = new_centroid
         self.frame[0] = new_frame
             
-    def update_for_cross_way(self, centroid, frame_appear):
+    # def update_for_cross_way(self, centroid, frame_appear):
         
         
 
-    def check_lane(self, lane):
-        if catch_cross_lane and (lane not in self.allow_lanes):
-            self.catch_cross_lane() 
+    # def check_lane(self, lane):
+    #     if catch_cross_lane and (lane not in self.allow_lanes):
+    #         self.catch_cross_lane() 
 
     def catch_fault_vehicle(self, src):
         # mode: 'speed', 'other'

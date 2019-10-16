@@ -16,18 +16,19 @@ def bbox2necess(image, bbox,frame,shape):
     """
     return a list, each element is a list contain [posX,posY,ID,frame_no, image bbox]
     """
-    print(image.shape)
     final_res=[]
     width = shape[0]
     height = shape[1]
     for box in bbox:
         x = (box[0]/416)*width
         y = (box[1]/416)*height
-        x_plus_w = box[2]
-        y_plus_h = box[3]
-        bbox2d = image[round(x):round(x_plus_w),round(y):round(y_plus_h),:]
-        x_centroid = ((box[0]+w/2.)/416)*width
-        y_centroid = ((box[1]+h/2.)/410)*height
+        w = ((box[2]-box[0])/416)*width
+        h = ((box[3]-box[1])/416)*height
+        x_plus_w = x+w
+        y_plus_h = y+h
+        bbox2d = image[int(round(x)):int(round(x_plus_w)),int(round(y)):int(round(y_plus_h))]
+        x_centroid = x + w/2
+        y_centroid = y + h/2
         res=[x_centroid,y_centroid,(box[4]),frame,bbox2d]
         final_res.append(res)
     return final_res
@@ -142,7 +143,7 @@ def detect_video(yolo, video_type, video_path, output_path,
                 if ID not in all_vehicle.keys():
                     all_vehicle[ID] = Vehicle(ID, centroid, frame_appear, fps, scale,
                                                 tuple_cam, bbox, allow_speed, allow_lanes, 
-                                                mode = mode)
+                                                all_lanes, mode = mode)
                 else:
                     all_vehicle[ID].update_for_highway(bbox, centroid, frame_appear)
             frame_num+=1
