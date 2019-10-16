@@ -128,14 +128,17 @@ def detect_video(yolo, video_type, video_path, output_path,
                                         shape = video_size)
             for vehicle in one_frame:
                 # [posX,posY,ID,frame_no, image bbox]
-                ID =  one_frame[2]
-                centroid = [one_frame[0],one_frame[1]]
-                frame_appear = one_frame[3]
-                bbox = one_frame[4]
+                ID =  int(round(vehicle[2]))
+                centroid = [vehicle[0],vehicle[1]]
+                frame_appear = vehicle[3]
+                bbox = vehicle[4]
                 
                 mode = 'speed'
-                if ID in ignore_set:
-                    continue
+
+                # later with clock and disappeared
+
+                # if ID in ignore_set:
+                #     continue
                 if ID not in all_vehicle.keys():
                     all_vehicle[ID] = Vehicle(ID, centroid, frame_appear, fps, scale,
                                                 tuple_cam, bbox, allow_speed, allow_lanes, 

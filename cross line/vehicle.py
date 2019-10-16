@@ -15,6 +15,13 @@ class Vehicle:
         check if thresh car problem in 1 time -> traffic jam
         # fix to have bbox in main #
         '''
+        '''
+        for cross_line:
+            accept_line
+            right_ditection = False
+            area of interest
+            
+        '''
         self.ID = ID
         self.centroids = [centroid, None]
         self.frame = [frame_appear, None]
@@ -75,7 +82,8 @@ class Vehicle:
         self.centroids[0] = new_centroid
         self.frame[0] = new_frame
             
-    # def update_for_cross_way(centroid, frame_appear):
+    def update_for_cross_way(self, centroid, frame_appear):
+        
         
 
     def check_lane(self, lane):
