@@ -1,0 +1,20 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 1 files
+Detected 0 issues that require attention
+--------------------------------------------------------------------------------
+================================================================================
+Detailed log follows:
+
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'yolo_loading.py'
+ outputting to 'yolo_loading-update.py'
+--------------------------------------------------------------------------------
+
+215:22: INFO: Added keywords to args of function 'tf.boolean_mask'
+216:27: INFO: Added keywords to args of function 'tf.boolean_mask'
+389:23: INFO: Added keywords to args of function 'tf.boolean_mask'
+411:19: INFO: Renamed 'tf.Print' to 'tf.compat.v1.Print'
+--------------------------------------------------------------------------------
+

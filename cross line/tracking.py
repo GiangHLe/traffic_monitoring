@@ -1,6 +1,8 @@
 from sort import *
 from utils import *
-from vehicle import *
+# from vehicle import *
+# from cross_red_line import *
+
 
 from keras import backend as K
 from keras.models import load_model
@@ -19,24 +21,28 @@ def bbox2necess(image, bbox,frame,shape):
     final_res=[]
     width = shape[0]
     height = shape[1]
+#     print(width,height)
     for box in bbox:
-        x = (box[0]/416)*width
-        y = (box[1]/416)*height
-        w = ((box[2]-box[0])/416)*width
-        h = ((box[3]-box[1])/416)*height
+#         print(box)
+        x = int(round(box[0]))
+        y = int(round(box[1]))
+        w = int(round(box[2]-box[0]))
+        h = int(round(box[3]))-int(round(box[1]))
+#         print(x,y,w,h)
         x_plus_w = x+w
         y_plus_h = y+h
-        bbox2d = image[int(round(x)):int(round(x_plus_w)),int(round(y)):int(round(y_plus_h))]
+        bbox2d = image[x:x_plus_w,y:y_plus_h]
         x_centroid = x + w/2
         y_centroid = y + h/2
-        res=[x_centroid,y_centroid,(box[4]),frame,bbox2d]
+        bbox2d_position = [x ,y,x_plus_w,y_plus_h]
+        res=[x_centroid,y_centroid,(box[4]), frame, bbox2d, bbox2d_position]
         final_res.append(res)
     return final_res
 
 
-def detect_video(yolo, video_type, video_path, output_path, 
-                    scale, vp1, vp2, pp, allow_speed, allow_lanes,
-                    all_lanes, thresh_frame):
+def detect_video(yolo, video_type, video_path, output_path, mask_path, mode, 
+                    scale, vp1, vp2, pp, allow_speed, best_performance_line,
+                    deadline4Red, allow_lanes, all_lanes, thresh_frame):
     '''
     - Input:
         + yolo: yolo model
@@ -49,14 +55,27 @@ def detect_video(yolo, video_type, video_path, output_path,
     # these thing should append into data file
     tuple_cam = computeCameraCalibration(vp1,vp2,pp)
     
+    # show for debug
+    
+    cv2.namedWindow('image',cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('image', 1000,600)
 
+    
+    
+    
+    
+    # require opencv 3.2
+    
     vid = cv2.VideoCapture(video_path)
     if not vid.isOpened():
         raise IOError("Couldn't open webcam or video")
     if video_type == 'stream':
-        fps = vid.get(cv2.cv.CV_CAP_PROP_FPS)
+        fps = vid.get(cv2.CAP_PROP_FPS)
     elif video_type == 'local':
-        fps = vid.get(7)
+        fps = vid.get(5)
+    # get(7) is all number of frame in video
+    # get(5) is get fps, fuck
+    
     video_FourCC = cv2.VideoWriter_fourcc(*'XVID')
     video_size      = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)),
                         int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
@@ -89,8 +108,8 @@ def detect_video(yolo, video_type, video_path, output_path,
             
             # detect for bbox right here
 
-            out_boxes, out_scores, out_classes = yolo.sess.run(
-                [yolo.boxes, yolo.scores, yolo.classes],
+            out_boxes, out_scores, out_classes = yolo.sess.run( 
+                [yolo.boxes, yolo.scores, yolo.classes],  
                 feed_dict={
                     yolo.yolo_model.input: image_data,
                     yolo.input_image_shape: [image.size[1], image.size[0]],
@@ -128,26 +147,78 @@ def detect_video(yolo, video_type, video_path, output_path,
             one_frame = bbox2necess(image = pic, bbox = res_track,frame =frame_num,
                                         shape = video_size)
             for vehicle in one_frame:
-                # [posX,posY,ID,frame_no, image bbox]
                 ID =  int(round(vehicle[2]))
                 centroid = [vehicle[0],vehicle[1]]
-                frame_appear = vehicle[3]
+                frame_appear = frame_num
                 bbox = vehicle[4]
-                
-                mode = 'speed'
+                bbox2d_position = vehicle[5]
 
-                # later with clock and disappeared
+                # for show video, will delete later
+                font                   = cv2.FONT_HERSHEY_SIMPLEX
+                fontScale              = 1
+                fontColor              = (0,0,255)
+                thickness              = 3
+                linetype               = cv2.LINE_AA
+                c_0 = int(round(centroid[0]))
+                c_1 = int(round(centroid[1]))
+                #end 
+                traffic_status = 'red'
 
-                # if ID in ignore_set:
-                #     continue
                 if ID not in all_vehicle.keys():
-                    all_vehicle[ID] = Vehicle(ID, centroid, frame_appear, fps, scale,
-                                                tuple_cam, bbox, allow_speed, allow_lanes, 
+                    all_vehicle[ID] = Vehicle(ID, centroid, frame_appear, bbox, allow_lanes, 
                                                 all_lanes, mode = mode)
-                else:
+                    if mode == 'speed':
+                        all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
+                                                            allow_speed, best_performance_line)
+                    elif mode == 'crossRedLine':
+                        mask = getMask(mask_path)
+                        all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
+                                            traffic_status = traffic_status,
+                                            areaOfInterest = mask)
+                    continue
+
+                if mode =='speed':
                     all_vehicle[ID].update_for_highway(bbox, centroid, frame_appear)
-            frame_num+=1
+                    #show for debug
+                    
+                    cv2.putText(pic,str(ID), 
+                                (c_1 - 10 , c_0 -10), 
+                                font, 
+                                fontScale,
+                                fontColor,
+                                thickness,
+                                linetype)
+                    cv2.putText(pic,str(all_vehicle[ID].speed), 
+                                (c_1 -10 , c_0 +20), 
+                                font, 
+                                fontScale,
+                                fontColor,
+                                thickness,
+                                linetype)
+                    cv2.imshow('image',pic)
 
-
-
+                elif mode == 'crossRedLine':
+                    all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
+                                    traffic_status, bbox2d_position)
+                    cv2.putText(pic,str(ID), 
+                                (c_1 - 10 , c_0 -10), 
+                                font, 
+                                fontScale,
+                                fontColor,
+                                thickness,
+                                linetype)
+                    cv2.putText(pic, all_vehicle[ID].catched, 
+                                (c_1 - 10 , c_0 -10), 
+                                font, 
+                                fontScale,
+                                fontColor,
+                                thickness,
+                                linetype)
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break            
+        frame_num+=1
+        
+    vid.release()
+    out.release()
+    cv2.destroyAllWindows()
 KalmanBoxTracker.count = 0

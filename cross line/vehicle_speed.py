@@ -3,7 +3,9 @@ import cv2
 import math
 
 def isPointBetweenLines(p, l1, l2):
+    p = np.append(np.array(p),[1])
     return np.dot(p,l1)*np.dot(p,l2)*np.dot(l1[0:2],l2[0:2]) <= 0
+
 def getLaneForPoint(p, lines):
     for i in range(len(lines)-1):
         if isPointBetweenLines(p, lines[i], lines[i+1]):
@@ -23,8 +25,6 @@ def pointToLineProjection(l, p):
 def getFocal(vp1, vp2, pp):
     return math.sqrt(- np.dot(vp1[0:2]-pp[0:2], vp2[0:2]-pp[0:2]))
 
-def isPointBetweenLines(p, l1, l2):
-    return np.dot(p,l1)*np.dot(p,l2)*np.dot(l1[0:2],l2[0:2]) <= 0
 
 def computeCameraCalibration(_vp1, _vp2, _pp):
     vp1 = np.concatenate((_vp1, [1]))    
@@ -55,8 +55,10 @@ def camera_calibration(vp1,vp2,pp):
 def calculateSpeeds(loc1, loc2, fps, scale, frame_diff, tuple_cam):
     vp1, vp2, vp3, pp, roadPlane, focal = tuple_cam
     projector = lambda p: getWorldCoordinagesOnRoadPlane(p, focal, roadPlane, pp)
-    points = map(lambda p: np.array([p[0],p[1],1]), loc1, loc2)
+    points = map(lambda p: np.array([p[0],p[1],1]), (loc1, loc2))
     points = map(projector, points)
+    points = list(points)
+    
     passedDistance = scale*np.linalg.norm(points[-1]-points[-2])
     elapsedTime = abs(frame_diff)/fps
     # m/s -> km/h

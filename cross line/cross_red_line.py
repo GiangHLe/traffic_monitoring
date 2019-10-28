@@ -35,7 +35,7 @@ def distanceFromPoint2Line(p, line):
         bottom = np.linalg.norm(np.array([a,b]))
         return top/bottom
 
-def cosineVetorPhase(v1,v2):
+def cosineVectorPhase(v1,v2):
     dotProduct = np.dot(v1,v2)
     normV1 = np.linalg.norm(v1)
     normV2 = np.linalg.norm(v2)
@@ -44,4 +44,4 @@ def cosineVetorPhase(v1,v2):
 def checkSameSideNormalVector(p, line):
     # p is numpy array with shape [1,3] with the final element is 1
     # line is something like ax+by+c = 0, line =[a,b,c]
-    return (line[0]*p[0]+line[1]*p[1]+c) > 0
+    return (line[0]*p[0]+line[1]*p[1]+line[2]) > 0
