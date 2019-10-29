@@ -57,8 +57,8 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     
     # show for debug
     
-    cv2.namedWindow('image',cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('image', 1000,600)
+#     cv2.namedWindow('image',cv2.WINDOW_NORMAL)
+#     cv2.resizeWindow('image', 1000,600)
 
     
     
@@ -76,23 +76,22 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     # get(7) is all number of frame in video
     # get(5) is get fps, fuck
     
-    video_FourCC = cv2.VideoWriter_fourcc(*'XVID')
+    video_FourCC = cv2.VideoWriter_fourcc('M','J','P','G')
     video_size      = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)),
                         int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+#     print(video_size)
     isOutput = True if output_path != "" else False
     if isOutput:
-        print("!!! TYPE:", type(output_path), type(video_FourCC), type(fps), type(video_size))
-        out = cv2.VideoWriter(output_path, video_FourCC, fps, video_size)
+#         print("!!! TYPE:", type(output_path), type(video_FourCC), type(fps), type(video_size))
+        out = cv2.VideoWriter(output_path, video_FourCC, fps, video_size, 1)
 
     tracker=Sort()
     frame_num=0
     all_vehicle={}
-    ignore_set = set()
+#     ignore_set = set()
 
-    # hope this thing can increase the speed of project
-    # change direction for normal vector
     mask = getMask(mask_path)
-
+    
     while True:
         return_value, pic = vid.read()
         if not return_value:
@@ -199,11 +198,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 fontColor,
                                 thickness,
                                 linetype)
-                    cv2.imshow('image',pic)
+#                     out.write(pic)
+#                     cv2.imshow('image',pic)
 
                 elif mode == 'crossRedLine':
-                    all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
-                                    traffic_status, bbox2d_position)
                     cv2.putText(pic,str(ID), 
                                 (c_1 - 10 , c_0 -10), 
                                 font, 
@@ -218,8 +216,17 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 fontColor,
                                 thickness,
                                 linetype)
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            break            
+#                     out.write(pic)
+#                     cv2.imshow('image',pic)
+                    
+                    all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
+                                    traffic_status, bbox2d_position)
+    
+
+#         if cv2.waitKey(25) & 0xFF == ord('q'):
+#             break  
+        out.write(pic)
+#         print(frame_num)
         frame_num+=1
         
     vid.release()
