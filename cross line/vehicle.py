@@ -2,7 +2,7 @@
 need to fix:
  + change cross lane permission into parameter.
  + set time disappear to clean up while running, for higher speed and for rtsp.
- + cross red line, deadline 28/10/2019.
+ + cross red line, deadline 28/10/2019. (fail)
  + build a basic model to recognize color in traffic light area.
 finish:
  + debug for speed.

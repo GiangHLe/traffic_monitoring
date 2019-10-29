@@ -88,6 +88,11 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     frame_num=0
     all_vehicle={}
     ignore_set = set()
+
+    # hope this thing can increase the speed of project
+    # change direction for normal vector
+    mask = getMask(mask_path)
+
     while True:
         return_value, pic = vid.read()
         if not return_value:
@@ -171,7 +176,6 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
                                                             allow_speed, best_performance_line)
                     elif mode == 'crossRedLine':
-                        mask = getMask(mask_path)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
                                             traffic_status = traffic_status,
                                             areaOfInterest = mask)
@@ -208,7 +212,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 thickness,
                                 linetype)
                     cv2.putText(pic, all_vehicle[ID].catched, 
-                                (c_1 - 10 , c_0 -10), 
+                                (c_1 - 10 , c_0 +20), 
                                 font, 
                                 fontScale,
                                 fontColor,
