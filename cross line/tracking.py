@@ -14,6 +14,8 @@ import utilities
 import numpy as np
 import cv2
 
+import time
+
 def bbox2necess(image, bbox,frame,shape):
     """
     return a list, each element is a list contain [posX,posY,ID,frame_no, image bbox]
@@ -29,12 +31,12 @@ def bbox2necess(image, bbox,frame,shape):
         w = int(round(box[2]-box[0]))
         h = int(round(box[3]))-int(round(box[1]))
 #         print(x,y,w,h)
-        x_plus_w = x+w
-        y_plus_h = y+h
+        x_plus_w = x + w
+        y_plus_h = y + h
         bbox2d = image[x:x_plus_w,y:y_plus_h]
         x_centroid = x + w/2
         y_centroid = y + h/2
-        bbox2d_position = [x ,y,x_plus_w,y_plus_h]
+        bbox2d_position = (x ,y, x_plus_w, y_plus_h)
         res=[x_centroid,y_centroid,(box[4]), frame, bbox2d, bbox2d_position]
         final_res.append(res)
     return final_res
@@ -54,7 +56,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     '''
     # these thing should append into data file
     tuple_cam = computeCameraCalibration(vp1,vp2,pp)
-    
+    t1 = time.time()
     # show for debug
     
 #     cv2.namedWindow('image',cv2.WINDOW_NORMAL)
@@ -88,10 +90,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     tracker=Sort()
     frame_num=0
     all_vehicle={}
-#     ignore_set = set()
+    ignore_set = set()
 
     mask = getMask(mask_path)
-    
+    # print(mask)
     while True:
         return_value, pic = vid.read()
         if not return_value:
@@ -157,6 +159,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 bbox = vehicle[4]
                 bbox2d_position = vehicle[5]
 
+                x,y,x_plus_w,y_plus_h = bbox2d_position
+                print(bbox2d_position)
+                cv2.rectangle(pic, (x,y), (x_plus_w,y_plus_h), (255,255,0), 2)
+                
                 # for show video, will delete later
                 font                   = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale              = 1
@@ -167,7 +173,17 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 c_1 = int(round(centroid[1]))
                 #end 
                 traffic_status = 'red'
-
+                
+                cv2.putText(pic,str(ID), 
+                                (c_1 - 10 , c_0 -10), 
+                                font, 
+                                fontScale,
+                                fontColor,
+                                thickness,
+                                linetype)
+                if ID in ignore_set:
+                    continue
+                    
                 if ID not in all_vehicle.keys():
                     all_vehicle[ID] = Vehicle(ID, centroid, frame_appear, bbox, allow_lanes, 
                                                 all_lanes, mode = mode)
@@ -175,22 +191,17 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
                                                             allow_speed, best_performance_line)
                     elif mode == 'crossRedLine':
+                        if checkFromTop(centroid, [507,498],[1199,472]):
+                            print("ID: {}".format(ID))
+                            ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
-                                            traffic_status = traffic_status,
-                                            areaOfInterest = mask)
+                                            traffic_status = traffic_status)
                     continue
 
                 if mode =='speed':
                     all_vehicle[ID].update_for_highway(bbox, centroid, frame_appear)
                     #show for debug
-                    
-                    cv2.putText(pic,str(ID), 
-                                (c_1 - 10 , c_0 -10), 
-                                font, 
-                                fontScale,
-                                fontColor,
-                                thickness,
-                                linetype)
+
                     cv2.putText(pic,str(all_vehicle[ID].speed), 
                                 (c_1 -10 , c_0 +20), 
                                 font, 
@@ -202,13 +213,6 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 #                     cv2.imshow('image',pic)
 
                 elif mode == 'crossRedLine':
-                    cv2.putText(pic,str(ID), 
-                                (c_1 - 10 , c_0 -10), 
-                                font, 
-                                fontScale,
-                                fontColor,
-                                thickness,
-                                linetype)
                     cv2.putText(pic, all_vehicle[ID].catched, 
                                 (c_1 - 10 , c_0 +20), 
                                 font, 
@@ -218,9 +222,12 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 linetype)
 #                     out.write(pic)
 #                     cv2.imshow('image',pic)
-                    
+                    t2 = time.time()
+                    fps_temp = round(frame_num/(t2-t1),2)
+                    img = cv2.putText(pic, "fps: "+str(fps_temp), (30, 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
                     all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
-                                    traffic_status, bbox2d_position)
+                                    traffic_status, bbox2d_position, mask)
     
 
 #         if cv2.waitKey(25) & 0xFF == ord('q'):

@@ -2,7 +2,7 @@
 need to fix:
  + change cross lane permission into parameter.
  + set time disappear to clean up while running, for higher speed and for rtsp.
- + cross red line, deadline 28/10/2019. (fail)
+ + cross red line, deadline 28/10/2019.
  + build a basic model to recognize color in traffic light area.
 finish:
  + debug for speed.
@@ -20,7 +20,7 @@ import numpy as np
 import cv2
 
 from vehicle_speed import *
-from cross_red_line import *
+# from cross_red_line import *
 
 class Vehicle:
     def __init__(self, ID, centroid, frame_appear,  bbox, 
@@ -131,12 +131,11 @@ class Vehicle:
         self.centroids[0] = new_centroid
         self.frame[0] = new_frame
 
-    def setParemeter4crossRedLine(self, deadline, traffic_status, areaOfInterest):
+    def setParemeter4crossRedLine(self, deadline, traffic_status):
         self._crossRedLine = False
         self._right_direction = False
         self.deadline = deadline
         self.traffic_status = traffic_status
-        self.areaOfInterest = areaOfInterest
         
         # rediculous
 
@@ -144,34 +143,44 @@ class Vehicle:
         
 
     def update_for_cross_redline(self, new_centroid, frame_appear, traffic_status,
-                                 bbox2D_position):
+                                 bbox2D_position, mask):
         self.centroids[1] = new_centroid
-        if distanceFromPoint2Line(new_centroid, self.deadline) <= 20:
-            v = np.array([self.centroids[1][0]-self.centroids[0][0], \
-                        self.centroids[1][1]-self.centroids[0][0]])
-            n = np.array([self.deadline[0],self.deadline[1]])
-            cosine_phase = cosineVectorPhase(v,n)
+        
+#         a = distanceFromPoint2Line(new_centroid, self.deadline)
+#         print("ID: {}, dist: {}".format(self.ID, a))
+        
+#         if distanceFromPoint2Line(new_centroid, self.deadline) <= 300:
+        v = np.array([self.centroids[1][0]-self.centroids[0][0], \
+                    self.centroids[1][1]-self.centroids[0][0]])
+        n = np.array([self.deadline[0],self.deadline[1]])
+        cosine_phase = cosineVectorPhase(v,n)
+#             print("ID: {}, cosine: {}".format(self.ID,cosine_phase))    
+        if cosine_phase < 1 and cosine_phase > 0:
+            self._right_direction = True
+        
+        #[507,498],[1199,472] from GIMP
+        if self._right_direction and self.traffic_status == 'red'  \
+            and not checkFromTop(new_centroid, [507,498],[1199,472]):
+            vehicle = getBbox(bbox2D_position)
+#                 print(vehicle)
+            prob = round(getProbability2Shape(vehicle, mask),2)
+            if self.ID == 1:
+                print("ID: {}, prop: {}, position: {}".format(self.ID, prob, new_centroid[0]))
+#                 print(type(vehicle),type(mask))
+#                 print(len(vehicle), len(mask))
 
-            if cosine_phase < 1 and cosine_phase > 0:
-                self._right_direction = True
-            
-            if self._right_direction and self.traffic_status == 'red'  \
-                and checkSameSideNormalVector(new_centroid, self.deadline):
-                vehicle = getBbox(bbox2D_position)
-                prob = getProbability2Shape(vehicle, self.areaOfInterest)
-                print(prob)
-                if prob >= 80:
-                    self.catch_fault_vehicle(self._crossRedLine_path)
+            if prob >= 80:
+                self.catch_fault_vehicle(self._crossRedLine_path)
 
-                    self.catched = "yeah"
+                self.catched = "yeah"
 
         self.centroids[0]=new_centroid
 
     def catch_fault_vehicle(self, src):
         # mode: 'speed', 'other'
         ID, frame, bbox , mode = self.ID, self.frame[-1], self.bbox, self.mode
-        if self.mode == 'speed':
-            cv2.imwrite(src + str(frame) + '_' + str(round(self.speed,2))+ "_vehicle_" + str(ID) + ".jpg", bbox)
-        else:
-            cv2.imwrite(src+str(frame)+ "_vehicle_" + str(ID) + ".jpg", bbox)
+#         if self.mode == 'speed':
+#             cv2.imwrite(src + str(frame) + '_' + str(round(self.speed,2))+ "_vehicle_" + str(ID) + ".jpg", bbox)
+#         else:
+        cv2.imwrite(src+str(frame)+ "_vehicle_" + str(ID) + ".jpg", bbox)
 

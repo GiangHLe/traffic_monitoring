@@ -41,7 +41,10 @@ def cosineVectorPhase(v1,v2):
     normV2 = np.linalg.norm(v2)
     return dotProduct/(normV1*normV2)
 
-def checkSameSideNormalVector(p, line):
-    # p is numpy array with shape [1,3] with the final element is 1
-    # line is something like ax+by+c = 0, line =[a,b,c]
-    return (line[0]*p[0]+line[1]*p[1]+line[2]) > 0
+def checkFromTop(p, p_line1, p_line2):
+    x,y = p
+    x1 = p_line1[0]
+    y1 = p_line1[1]
+    x2 = p_line2[0]
+    y2 = p_line2[1]
+    return (x-x1)*(y2-y1)-(y-y1)*(x2-x1) < 0
