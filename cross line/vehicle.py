@@ -20,7 +20,7 @@ import numpy as np
 import cv2
 
 from vehicle_speed import *
-# from cross_red_line import *
+from cross_red_line import *
 
 class Vehicle:
     def __init__(self, ID, centroid, frame_appear,  bbox, 
@@ -159,8 +159,10 @@ class Vehicle:
             self._right_direction = True
         
         #[507,498],[1199,472] from GIMP
-        if self._right_direction and self.traffic_status == 'red'  \
-            and not checkFromTop(new_centroid, [507,498],[1199,472]):
+#         if self.ID ==1:
+#             print(new_centroid)
+#             print(checkFromTop(new_centroid, [507,498],[1199,472]))
+        if self._right_direction and (self.traffic_status == 'red') and (not checkFromTop(new_centroid, [507,498],[1199,472])):
             vehicle = getBbox(bbox2D_position)
 #                 print(vehicle)
             prob = round(getProbability2Shape(vehicle, mask),2)

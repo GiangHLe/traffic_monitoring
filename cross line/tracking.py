@@ -1,6 +1,6 @@
 from sort import *
 from utils import *
-# from vehicle import *
+from vehicle import *
 # from cross_red_line import *
 
 
@@ -36,7 +36,7 @@ def bbox2necess(image, bbox,frame,shape):
         bbox2d = image[x:x_plus_w,y:y_plus_h]
         x_centroid = x + w/2
         y_centroid = y + h/2
-        bbox2d_position = (x ,y, x_plus_w, y_plus_h)
+        bbox2d_position = (y ,x, y_plus_h, x_plus_w)
         res=[x_centroid,y_centroid,(box[4]), frame, bbox2d, bbox2d_position]
         final_res.append(res)
     return final_res
@@ -160,9 +160,9 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 bbox2d_position = vehicle[5]
 
                 x,y,x_plus_w,y_plus_h = bbox2d_position
-                print(bbox2d_position)
-                cv2.rectangle(pic, (x,y), (x_plus_w,y_plus_h), (255,255,0), 2)
-                
+#                 print(bbox2d_position)
+#                 image = cv2.circle(pic, centroid, 5, [0,255,255], 3)
+                cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)                
                 # for show video, will delete later
                 font                   = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale              = 1
@@ -181,6 +181,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 fontColor,
                                 thickness,
                                 linetype)
+#                 image = cv2.circle(pic, (c_1,c_0), 5, [0,255,255], 3)
                 if ID in ignore_set:
                     continue
                     
@@ -191,7 +192,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
                                                             allow_speed, best_performance_line)
                     elif mode == 'crossRedLine':
-                        if checkFromTop(centroid, [507,498],[1199,472]):
+                        if not checkFromTop(centroid, [507,498],[1199,472]):
                             print("ID: {}".format(ID))
                             ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 

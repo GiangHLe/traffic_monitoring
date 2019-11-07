@@ -47,4 +47,4 @@ def checkFromTop(p, p_line1, p_line2):
     y1 = p_line1[1]
     x2 = p_line2[0]
     y2 = p_line2[1]
-    return (x-x1)*(y2-y1)-(y-y1)*(x2-x1) < 0
+    return (x-x1)*(y2-y1)-(y-y1)*(x2-x1) > 0
