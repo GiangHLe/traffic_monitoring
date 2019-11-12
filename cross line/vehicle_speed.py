@@ -23,7 +23,7 @@ def pointToLineProjection(l, p):
     return intersection/intersection[-1]
 
 def getFocal(vp1, vp2, pp):
-    return math.sqrt(- np.dot(vp1[0:2]-pp[0:2], vp2[0:2]-pp[0:2]))
+    return math.sqrt(-np.dot(vp1[0:2]-pp[0:2], vp2[0:2]-pp[0:2]))
 
 
 def computeCameraCalibration(_vp1, _vp2, _pp):

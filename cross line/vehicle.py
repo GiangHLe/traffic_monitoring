@@ -47,7 +47,7 @@ class Vehicle:
         self.frame = [frame_appear, None]
         self.bbox  = bbox # image
         self.lane = getLaneForPoint(centroid,all_lanes)
-
+        
         # this thing
         self._catch_cross_lane = False
         
@@ -59,12 +59,12 @@ class Vehicle:
         self._called = 0
         # Use for save the speed of fault car
         self.mode = 'speed'
-        self._overSpeed_path = './OverSpeed/'
-        self._crossLane_path = './CrossLane/'
-        self._crossRedLine_path = './crossRedLine/'
-        self._problem_path = './carWithProblem/'
-        self._crossLane = False
-        self._problem   = False
+        self._overSpeed_path = kwags.pop('overSpeed_path','./OverSpeed/')
+        self._crossLane_path = kwags.pop('crossLane_path','./CrossLane/')
+        self._crossRedLine_path = kwags.pop('crossRedLine_path','./crossRedLine/')
+        self._problem_path = kwags.pop('problem_path','./carWithProblem/')
+        self._crossLane = kwags.pop('crossLane',False)
+        self._problem   = kwags.pop('problem',False)
 
         if self._catch_cross_lane and (self.lane not in self.allow_lanes) and not self._crossLane:
             self.catch_fault_vehicle(self._crossLane_path)

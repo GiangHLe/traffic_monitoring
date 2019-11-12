@@ -131,11 +131,17 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     final_box.append(b)
                     label.append(lb)
                     scores.append(sc)
-                if lb == 9 and capture_light:
+                if lb == 9 and mode == 'crossRedLine' and capture_light:
                     # print this line to debug
                     # capture the light for new agorithm 
                     # append new mask into test image
                     # check photoshop app
+                    # check for 
+                    capture_light = False
+                    traffic_bbox = b
+
+
+
                     
 
 
@@ -181,8 +187,14 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 c_0 = int(round(centroid[0]))
                 c_1 = int(round(centroid[1]))
                 #end 
-                traffic_status = 'red'
-                
+                # traffic_status = 'red'
+
+
+                # temporary
+                traffic_status = detect_red(traffic_bbox)
+
+
+
                 cv2.putText(pic,str(ID), 
                                 (c_1 - 10 , c_0 -10), 
                                 font, 
