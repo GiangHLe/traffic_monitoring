@@ -14,7 +14,7 @@ import utilities
 import numpy as np
 import cv2
 
-# import time
+import time
 
 def bbox2necess(image, bbox,frame,shape):
     """
@@ -93,9 +93,11 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     ignore_set = set()
 
     mask = getMask(mask_path)
+    capture_light = True
     # print(mask)
+    t1 = time.time()
     while True:
-        capture_light = True
+        
 
         return_value, pic = vid.read()
         if not return_value:
@@ -137,36 +139,62 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     # append new mask into test image
                     # check photoshop app
                     # check for 
+                    # traffic_bbox.append(b)
+                    # traffic_score.append(sc)
+                    t_x, t_y, b_x, b_y = np.int_(np.round(np.array(b)))
+#                     traffic_bbox = pic[t_x:b_x, t_y:b_y, :]
+#                     cv2.imwrite('C:/Users/ADMINS/Desktop/light.jpg', traffic_bbox)
                     capture_light = False
-                    traffic_bbox = b
-
-
-
-                    
 
 
             out_boxes=np.array(final_box)
-            out_classes=np.array(label)
+            # out_classes=np.array(label)
             out_scores=np.array(scores)
             final_boxes=np.column_stack((out_boxes,out_scores))
+            # print(final_boxes)
+            # break
             final_boxes = final_boxes[np.logical_and(final_boxes[:, 4] > 0.3, final_boxes[:, 2] -
                                                         final_boxes[:, 0] < 600)]
 
                 # Apply NMS
             indices = utilities.non_max_suppression(final_boxes, 0.9, final_boxes[:, 4])
             
+            # if mode == 'crossRedLine' and capture_light:
+            #     traffic_bbox = np.array(traffic_bbox)
+            #     print(traffic_bbox)
+
+            #     traffic_score = np.array(traffic_score)
+            #     final_traffic = np.column_stack((traffic_bbox,traffic_score))
+            #     final_traffic = final_traffic[np.logical_and(final_traffic[:, 4] > 0.3, final_traffic[:, 2] -
+            #                                             final_traffic[:, 0] < 600)]
+            #     traffic_bbox =  utilities.non_max_suppression(final_traffic, 0.9, final_traffic[:, 4])
+            #     break
+            
+
             out_boxes = [final_boxes[i] for i in indices]
-            out_classes= [out_classes[i] for i in indices]
-            rev=(reversed(out_classes))  # for display in order since yolo reverse the list 
-            out_classes=[]
-            for r in rev:
-                out_classes.append(r)
-            out_classes=np.array(out_classes)
-            bf=out_boxes
+            # out_classes= [out_classes[i] for i in indices]
+            # rev=(reversed(out_classes))  # for display in order since yolo reverse the list 
+            # out_classes=[]
+            # for r in rev:
+            #     out_classes.append(r)
+            # out_classes=np.array(out_classes)
+            # bf=out_boxes
             res_track=tracker.update(np.array(out_boxes))
             # res_track return [x,y, x+w, x+y, ID]
             one_frame = bbox2necess(image = pic, bbox = res_track,frame =frame_num,
                                         shape = video_size)
+            if mode == 'crossRedLine':
+                try:
+                    traffic_bbox = pic[t_x:b_x, t_y:b_y, :]
+                    traffic_status = detect_red(traffic_bbox)
+                    if traffic_status:
+                        text_traffic = 'Red'
+                        
+                    else:
+                        text_traffic = 'Green'
+                except:
+                    print('can not find traffic light')
+                    break
             for vehicle in one_frame:
                 ID =  int(round(vehicle[2]))
                 centroid = [vehicle[0],vehicle[1]]
@@ -191,7 +219,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 
 
                 # temporary
-                traffic_status = detect_red(traffic_bbox)
+                
 
 
 
@@ -213,8 +241,9 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
                                                             allow_speed, best_performance_line)
                     elif mode == 'crossRedLine':
-                        if not checkFromTop(centroid, [507,498],[1199,472]):
-                            print("ID: {}".format(ID))
+#                         if not checkFromTop(centroid, [507,498],[1199,472]):
+                        if not checkFromTop(centroid, [775,734],[1180,1034]):
+#                             print("ID: {}".format(ID))
                             ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
                                             traffic_status = traffic_status)
@@ -235,6 +264,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 #                     cv2.imshow('image',pic)
 
                 elif mode == 'crossRedLine':
+                    
                     cv2.putText(pic, all_vehicle[ID].catched, 
                                 (c_1 - 10 , c_0 +20), 
                                 font, 
@@ -242,16 +272,21 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 fontColor,
                                 thickness,
                                 linetype)
+                    
 #                     out.write(pic)
 #                     cv2.imshow('image',pic)
-            
+                    t2 = time.time()
                     fps_temp = round(frame_num/(t2-t1),2)
                     img = cv2.putText(pic, "fps: "+str(fps_temp), (30, 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
+                    img = cv2.putText(pic, "Status: "+str(text_traffic), (30, 60),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
                     all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
                                     traffic_status, bbox2d_position, mask)
-    
-
+#                     print(frame_num/60)
+                    if (frame_num/60) % 2 ==0 and not traffic_status:
+                        cv2.imwrite('C:/Users/ADMINS/Desktop/SaiGon/cross_red_line/7728/new/'+str(frame_num)+'.jpg', pic[t_x:b_x, t_y:b_y, :])
+#                         print(traffic_status)
 #         if cv2.waitKey(25) & 0xFF == ord('q'):
 #             break  
         out.write(pic)
