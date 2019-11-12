@@ -14,7 +14,7 @@ import utilities
 import numpy as np
 import cv2
 
-import time
+# import time
 
 def bbox2necess(image, bbox,frame,shape):
     """
@@ -56,7 +56,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     '''
     # these thing should append into data file
     tuple_cam = computeCameraCalibration(vp1,vp2,pp)
-    t1 = time.time()
+    # t1 = time.time()
     # show for debug
     
 #     cv2.namedWindow('image',cv2.WINDOW_NORMAL)
@@ -95,6 +95,8 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     mask = getMask(mask_path)
     # print(mask)
     while True:
+        capture_light = True
+
         return_value, pic = vid.read()
         if not return_value:
             break
@@ -129,6 +131,13 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     final_box.append(b)
                     label.append(lb)
                     scores.append(sc)
+                if lb == 9 and capture_light:
+                    # print this line to debug
+                    # capture the light for new agorithm 
+                    # append new mask into test image
+                    # check photoshop app
+                    
+
 
             out_boxes=np.array(final_box)
             out_classes=np.array(label)
@@ -223,7 +232,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                 linetype)
 #                     out.write(pic)
 #                     cv2.imshow('image',pic)
-                    t2 = time.time()
+            
                     fps_temp = round(frame_num/(t2-t1),2)
                     img = cv2.putText(pic, "fps: "+str(fps_temp), (30, 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
