@@ -188,10 +188,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     traffic_bbox = pic[t_x:b_x, t_y:b_y, :]
                     traffic_status = detect_red(traffic_bbox)
                     if traffic_status:
-                        text_traffic = 'Red'
+                        text_traffic = 'red'
                         
                     else:
-                        text_traffic = 'Green'
+                        text_traffic = 'green'
                 except:
                     print('can not find traffic light')
                     break
@@ -246,7 +246,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 #                             print("ID: {}".format(ID))
                             ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
-                                            traffic_status = traffic_status)
+                                            traffic_status = text_traffic)
                     continue
 
                 if mode =='speed':
@@ -282,10 +282,11 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     img = cv2.putText(pic, "Status: "+str(text_traffic), (30, 60),
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
                     all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
-                                    traffic_status, bbox2d_position, mask)
+                                    text_traffic, bbox2d_position, mask)
 #                     print(frame_num/60)
-                    if (frame_num/60) % 2 ==0 and not traffic_status:
-                        cv2.imwrite('C:/Users/ADMINS/Desktop/SaiGon/cross_red_line/7728/new/'+str(frame_num)+'.jpg', pic[t_x:b_x, t_y:b_y, :])
+                    if (frame_num/60) % 2 ==0:
+                        print(frame_num/60)
+                        # cv2.imwrite('C:/Users/ADMINS/Desktop/SaiGon/cross_red_line/7728/new/'+str(frame_num)+'.jpg', pic[t_x:b_x, t_y:b_y, :])
 #                         print(traffic_status)
 #         if cv2.waitKey(25) & 0xFF == ord('q'):
 #             break  

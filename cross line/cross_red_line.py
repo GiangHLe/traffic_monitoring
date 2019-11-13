@@ -50,19 +50,19 @@ def checkFromTop(p, p_line1, p_line2):
     return (x-x1)*(y2-y1)-(y-y1)*(x2-x1) > 0
 
 def detect_red(img, Threshold=0.01):
-
+    
     desired_dim = (30, 90) # width, height
     img = cv2.resize(img, desired_dim, interpolation=cv2.INTER_LINEAR)
-    img_hsv= cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    img_hsv= cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # lower mask (0-10)
-    lower_red = np.array([0,50,50])
-    upper_red = np.array([10,255,255])
+    lower_red = (0,50,50)
+    upper_red = (10,255,255)
     mask0 = cv2.inRange(img_hsv, lower_red, upper_red)
 
     # upper mask (170-180)
-    lower_red = np.array([170,50,50])
-    upper_red = np.array([180,255,255])
+    lower_red = (170,50,50)
+    upper_red = (180,255,255)
     mask1 = cv2.inRange(img_hsv, lower_red, upper_red)
 
     # red pixels' mask
@@ -70,7 +70,7 @@ def detect_red(img, Threshold=0.01):
     
     # Compare the percentage of red values
     rate = np.count_nonzero(mask) / (desired_dim[0] * desired_dim[1])
-#     print(rate)
+    
     if rate > Threshold:
         return True
     else:
