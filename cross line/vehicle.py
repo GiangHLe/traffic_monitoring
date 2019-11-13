@@ -139,7 +139,7 @@ class Vehicle:
         
         # rediculous
 
-        self.catched = "Nope"
+        self.catched = ""
         
 
     def update_for_cross_redline(self, new_centroid, frame_appear, traffic_status,
@@ -162,19 +162,20 @@ class Vehicle:
 #         if self.ID ==1:
 #             print(new_centroid)
 #             print(checkFromTop(new_centroid, [507,498],[1199,472]))
-        if self._right_direction and (self.traffic_status == 'red') and (not checkFromTop(new_centroid, [507,498],[1199,472])):
+        if self._right_direction and (self.traffic_status == 'red') 
+        # and (not checkFromTop(new_centroid, [507,498],[1199,472])):
             vehicle = getBbox(bbox2D_position)
 #                 print(vehicle)
             prob = round(getProbability2Shape(vehicle, mask),2)
-            if self.ID == 1:
-                print("ID: {}, prop: {}, position: {}".format(self.ID, prob, new_centroid[0]))
+            # if self.ID == 1:
+            #     print("ID: {}, prop: {}, position: {}".format(self.ID, prob, new_centroid[0]))
 #                 print(type(vehicle),type(mask))
 #                 print(len(vehicle), len(mask))
 
-            if prob >= 80:
+            if prob >= 30:
                 self.catch_fault_vehicle(self._crossRedLine_path)
 
-                self.catched = "yeah"
+                self.catched = "Get Fault"
 
         self.centroids[0]=new_centroid
 

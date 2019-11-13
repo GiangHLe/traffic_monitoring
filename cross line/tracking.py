@@ -1,6 +1,6 @@
 from sort import *
 from utils import *
-from vehicle import *
+# from vehicle import *
 # from cross_red_line import *
 
 
@@ -205,7 +205,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 x,y,x_plus_w,y_plus_h = bbox2d_position
 #                 print(bbox2d_position)
 #                 image = cv2.circle(pic, centroid, 5, [0,255,255], 3)
-                cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)                
+#                 cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)                
                 # for show video, will delete later
                 font                   = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale              = 1
@@ -250,6 +250,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     continue
 
                 if mode =='speed':
+                    cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)
                     all_vehicle[ID].update_for_highway(bbox, centroid, frame_appear)
                     #show for debug
 
@@ -264,7 +265,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 #                     cv2.imshow('image',pic)
 
                 elif mode == 'crossRedLine':
-                    
+                    cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)
                     cv2.putText(pic, all_vehicle[ID].catched, 
                                 (c_1 - 10 , c_0 +20), 
                                 font, 
@@ -277,21 +278,36 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 #                     cv2.imshow('image',pic)
                     t2 = time.time()
                     fps_temp = round(frame_num/(t2-t1),2)
-                    img = cv2.putText(pic, "fps: "+str(fps_temp), (30, 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
-                    img = cv2.putText(pic, "Status: "+str(text_traffic), (30, 60),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 5)
+                    cv2.putText(pic, "fps: "+str(fps_temp), (30, 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 4)
+                    cv2.putText(pic, "Status: "+str(text_traffic), (30, 60),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 4)
                     all_vehicle[ID].update_for_cross_redline(centroid, frame_appear, 
                                     text_traffic, bbox2d_position, mask)
+                    
+#                     (763,738)
+#                     (1415,579)
+#                     (1884,773)
+#                     (1181,1050)
+                    cv2.line(pic, (704,680) , (1165,432) , (0,255,255), 3) 
+                    cv2.line(pic, (1165,432) , (1900,756) , (0,255,255), 3) 
+                    cv2.line(pic, (1900,756) , (1222,1070) , (0,255,255), 3) 
+                    cv2.line(pic, (1222,1070) , (704,680) , (0,255,255), 3) 
+                    
+
 #                     print(frame_num/60)
-                    if (frame_num/60) % 2 ==0:
-                        print(frame_num/60)
+#                     if (frame_num/60) % 2 ==0:
+#                         print(frame_num/60)
                         # cv2.imwrite('C:/Users/ADMINS/Desktop/SaiGon/cross_red_line/7728/new/'+str(frame_num)+'.jpg', pic[t_x:b_x, t_y:b_y, :])
 #                         print(traffic_status)
-#         if cv2.waitKey(25) & 0xFF == ord('q'):
-#             break  
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break  
         out.write(pic)
+        
+        cv2.imshow('frame', pic)
 #         print(frame_num)
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break 
         frame_num+=1
         
     vid.release()
