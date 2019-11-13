@@ -128,6 +128,15 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
             final_box=[]
             label=[]
             scores=[]
+            
+            cv2.line(pic, (704,680) , (1165,432) , (0,255,255), 3) 
+            cv2.line(pic, (1165,432) , (1900,756) , (0,255,255), 3) 
+            cv2.line(pic, (1900,756) , (1222,1070) , (0,255,255), 3) 
+            cv2.line(pic, (1222,1070) , (704,680) , (0,255,255), 3) 
+            
+            
+            
+            
             for b,lb,sc in zip(out_boxes,out_classes,out_scores):
                 if lb in [2,3,5,7]:
                     final_box.append(b)
@@ -242,8 +251,9 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                                             allow_speed, best_performance_line)
                     elif mode == 'crossRedLine':
 #                         if not checkFromTop(centroid, [507,498],[1199,472]):
-                        if not checkFromTop(centroid, [775,734],[1180,1034]):
-#                             print("ID: {}".format(ID))
+#                         if not checkFromTop(centroid, [1165,432] , [1900,756]):
+                        if not checkFromTop(centroid, [704,680] , [1222,1070]):
+# #                             print("ID: {}".format(ID))
                             ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
                                             traffic_status = text_traffic)
@@ -289,10 +299,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 #                     (1415,579)
 #                     (1884,773)
 #                     (1181,1050)
-                    cv2.line(pic, (704,680) , (1165,432) , (0,255,255), 3) 
-                    cv2.line(pic, (1165,432) , (1900,756) , (0,255,255), 3) 
-                    cv2.line(pic, (1900,756) , (1222,1070) , (0,255,255), 3) 
-                    cv2.line(pic, (1222,1070) , (704,680) , (0,255,255), 3) 
+#                     cv2.line(pic, (704,680) , (1165,432) , (0,255,255), 3) 
+#                     cv2.line(pic, (1165,432) , (1900,756) , (0,255,255), 3) 
+#                     cv2.line(pic, (1900,756) , (1222,1070) , (0,255,255), 3) 
+#                     cv2.line(pic, (1222,1070) , (704,680) , (0,255,255), 3) 
                     
 
 #                     print(frame_num/60)

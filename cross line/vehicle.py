@@ -154,7 +154,7 @@ class Vehicle:
                     self.centroids[1][1]-self.centroids[0][0]])
         n = np.array([self.deadline[0],self.deadline[1]])
         cosine_phase = cosineVectorPhase(v,n)
-#             print("ID: {}, cosine: {}".format(self.ID,cosine_phase))    
+#         print("ID: {}, cosine: {}".format(self.ID,cosine_phase))    
         if cosine_phase < 1 and cosine_phase > 0:
             self._right_direction = True
         
@@ -162,7 +162,7 @@ class Vehicle:
 #         if self.ID ==1:
 #             print(new_centroid)
 #             print(checkFromTop(new_centroid, [507,498],[1199,472]))
-        if self._right_direction and (self.traffic_status == 'red') 
+        if self._right_direction and (self.traffic_status == 'red'): 
         # and (not checkFromTop(new_centroid, [507,498],[1199,472])):
             vehicle = getBbox(bbox2D_position)
 #                 print(vehicle)
