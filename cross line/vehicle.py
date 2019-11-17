@@ -142,7 +142,7 @@ class Vehicle:
         self.text = '' 
     def update_for_cross_redline(self, new_centroid, frame_appear, traffic_status,
                                  bbox2D_position, mask, image):
-        if self.catched and (not self._crossRedLine) and (self.called == 8):
+        if self.catched and (not self._crossRedLine) and (self.called == 30):
             self.catch_fault_vehicle(self._crossRedLine_path, image)
             self._crossRedLine = True
         if self.catched:

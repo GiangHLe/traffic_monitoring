@@ -51,7 +51,8 @@ def checkFromTop(p, p_line1, p_line2):
 
 def detect_red(img, Threshold=0.01):
     
-    desired_dim = (30, 90) # width, height
+    # width, height
+    desired_dim = (30, 90) 
     img = cv2.resize(img, desired_dim, interpolation=cv2.INTER_LINEAR)
     img_hsv= cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
