@@ -43,7 +43,7 @@ def bbox2necess(image, bbox,frame,shape):
 
 
 def detect_video(yolo, video_type, video_path, output_path, mask_path, mode, 
-                    scale, vp1, vp2, pp, allow_speed, best_performance_line,
+                    scale, vp1, vp2, pp, allow_speed, best_performance_range,
                     deadline4Red, allow_lanes, all_lanes, thresh_frame, show):
     '''
     - Input:
@@ -97,7 +97,11 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     # print(mask)
     t1 = time.time()
     while True:      
+        
         return_value, pic = vid.read()
+#         if frame_num <=1800:
+#             frame_num+=1
+#             continue
         if not return_value:
             break
         image = Image.fromarray(pic)
@@ -217,10 +221,12 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 
 
                 # temporary
-                
-                image_vehicle = pic[(c_0-100):(c_0+100), \
-                                    (c_1-200):(c_1+200)]
-
+                if mode == 'crossRedLine':
+                    image_vehicle = pic[(c_0-100):(c_0+100), \
+                                        (c_1-200):(c_1+200)]
+                elif mode == 'speed':
+                    image_vehicle = pic[(c_0-200):(c_0+200), \
+                                        (c_1-200):(c_1+200)]
                 if show:
                     cv2.putText(pic,str(ID), 
                                     (c_1 - 10 , c_0 -10), 
@@ -237,7 +243,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                                 all_lanes, image_vehicle, mode = mode)
                     if mode == 'speed':
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
-                                                            allow_speed, best_performance_line)
+                                                            allow_speed, best_performance_range)
                     elif mode == 'crossRedLine':
 #                         if not checkFromTop(centroid, [507,498],[1199,472]):
 #                         if not checkFromTop(centroid, [1165,432] , [1900,756]):
@@ -250,7 +256,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 
                 if mode =='speed':
                     if show:
-                        cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)
+                        cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 4)
                     
 
                         cv2.putText(pic,str(all_vehicle[ID].speed), 
@@ -265,7 +271,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 
                 elif mode == 'crossRedLine':
                     if show:
-                        cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 2)
+                        cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 4)
                         cv2.putText(pic, all_vehicle[ID].text, 
                                     (c_1 - 10 , c_0 +20), 
                                     font, 

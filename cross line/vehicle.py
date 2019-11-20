@@ -40,9 +40,11 @@ class Vehicle:
             area of interest
             
         '''
+
         #### need another network to regconize the license plate for both speed and
         #### cross red line (especially this)
         self.ID = ID
+        centroid = self.swapCentroid(centroid)
         self.centroids = [centroid, None]
         self.frame = [frame_appear, None]
         self.bbox  = bbox # image
@@ -64,13 +66,16 @@ class Vehicle:
         self._problem   = kwags.pop('problem',False)
         
         self.done = False
-        self.called = 0
+        self._called = 0
         if self._catch_cross_lane and (self.lane not in self.allow_lanes) and not self._crossLane:
             self.catch_fault_vehicle(self._crossLane_path, image)
             self._crossLane = True
 
+    def swapCentroid(self, c):
+        return [c[1],c[0]]
+
     def setParemeter4speedMeasure(self, fps, scale, tuple_cam, allow_speed, 
-                                    best_performance_line):
+                                    best_performance_range):
         # set parameter if mode is speed
         self.speed = 0
         self.fps = fps
@@ -78,7 +83,7 @@ class Vehicle:
         self.allow_speed = allow_speed
         self.speed_avarage = []
         self.tuple_cam = tuple_cam
-        self.best_performance_line = best_performance_line
+        self.best_performance_range = best_performance_range
         self._overSpeed = False
         
         
@@ -89,6 +94,8 @@ class Vehicle:
         # detect the vehicle with problem
         # Assume that there will be no traffic jam on highway
 
+        new_centroid = self.swapCentroid(new_centroid)
+
 
         vp1, vp2, vp3, pp, roadPlane, focal = self.tuple_cam
         laneDivLines = self.all_lanes
@@ -96,7 +103,8 @@ class Vehicle:
         self.frame[1] = new_frame
         self.bbox = new_bbox
         self.lane = getLaneForPoint(new_centroid, laneDivLines)
-
+        
+        
         self._called += 1
         time_appear = self._called/self.fps
         
@@ -112,13 +120,18 @@ class Vehicle:
             self.catch_fault_vehicle(self._crossLane_path, image)
             self._crossLane = True
 
+        frame_diff = self.frame[1]-self.frame[0]
+        if frame_diff % 10 != 0:
+            return None
+
         # Make sure car in the area with best camera calibration for best measurement
         # take avarage speed for problem car
         ### lack of counting time to clean up whenever a car disappear for 3s
         if  (not(getLaneForPoint(self.centroids[0], laneDivLines) is None or \
                getLaneForPoint(self.centroids[1], laneDivLines) is None)) \
-               and new_centroid[0]>= self.best_performance_line:
-            frame_diff = self.frame[1]-self.frame[0]
+               and new_centroid[1]>= self.best_performance_range[0] \
+               and new_centroid[1]<= self.best_performance_range[1]:
+            
             
             self.speed = calculateSpeeds(self.centroids[0],self.centroids[1], self.fps, 
                                 self.scale, frame_diff, self.tuple_cam)
@@ -142,11 +155,11 @@ class Vehicle:
         self.text = '' 
     def update_for_cross_redline(self, new_centroid, frame_appear, traffic_status,
                                  bbox2D_position, mask, image):
-        if self.catched and (not self._crossRedLine) and (self.called == 30):
+        if self.catched and (not self._crossRedLine) and (self._called == 30):
             self.catch_fault_vehicle(self._crossRedLine_path, image)
             self._crossRedLine = True
         if self.catched:
-            self.called += 1
+            self._called += 1
         else:
             self.centroids[1] = new_centroid
             # take movement vector of vehicle
