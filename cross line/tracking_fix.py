@@ -147,6 +147,9 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 
             res_track=tracker.update(np.array(out_boxes))
 
+            # add label in this
+
+
             one_frame = bbox2necess(image = pic, bbox = res_track,frame =frame_num,
                                         shape = video_size)
             if mode == 'crossRedLine':
@@ -170,6 +173,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
 
                 x,y,x_plus_w,y_plus_h = bbox2d_position
                 
+                
+
+
+
                 # set font and color
                 font                   = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale              = 1
@@ -181,13 +188,27 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 c_0 = int(round(centroid[0]))
                 c_1 = int(round(centroid[1]))
 
-                # temporary
-                if mode == 'crossRedLine':
+
+
+
+                # car
+                if label == 2:
+                    image_vehicle = pic[(c_0-150):(c_0+150), \
+                                        (c_1-150):(c_1+150)]
+                # motorbike
+                elif label == 3 :
                     image_vehicle = pic[(c_0-100):(c_0+100), \
-                                        (c_1-200):(c_1+200)]
-                elif mode == 'speed':
+                                        (c_1-100):(c_1+100)]
+                # bus
+                elif label == 5:
+                    image_vehicle = pic[(c_0-250):(c_0+250), \
+                                        (c_1-250):(c_1+250)]
+                # truck
+                elif label == 2:
                     image_vehicle = pic[(c_0-200):(c_0+200), \
                                         (c_1-200):(c_1+200)]
+
+
                 if show:
                     cv2.putText(pic,str(ID), 
                                     (c_1 - 10 , c_0 -10), 
