@@ -229,7 +229,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
                                                             allow_speed, best_performance_range)
                     elif mode == 'crossRedLine':
-                        
+                        if centroid in mask:
                         if not checkFromTop(centroid, [704,680] , [1222,1070]):
                             ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
