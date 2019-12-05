@@ -54,6 +54,18 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     - Output:
         + A tensor [x,y,ID,frame_num]
     '''
+    
+
+
+
+
+
+
+
+
+
+
+
     tuple_cam = computeCameraCalibration(vp1,vp2,pp)
     
     vid = cv2.VideoCapture(video_path)
@@ -228,10 +240,10 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     if mode == 'speed':
                         all_vehicle[ID].setParemeter4speedMeasure(fps, scale, tuple_cam,
                                                             allow_speed, best_performance_range)
-                    elif mode == 'crossRedLine':
-                        if centroid in mask:
+                    elif mode == 'crossRedLine':                          
                         if not checkFromTop(centroid, [704,680] , [1222,1070]):
-                            ignore_set.add(ID)
+                            if tuple(centroid) not in mask:
+                                ignore_set.add(ID)
                         all_vehicle[ID].setParemeter4crossRedLine(deadline = deadline4Red, 
                                             traffic_status = text_traffic)
                     continue

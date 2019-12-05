@@ -2,14 +2,15 @@
 need to fix:
  + change cross lane permission into parameter.
  + set time disappear to clean up while running, for higher speed and for rtsp.
- + cross red line, deadline 28/10/2019.
- + build a basic model to recognize color in traffic light area.
+ + gtData for each video and each situation
+    
 finish:
  + debug for speed.
  + debug for fps.
  + debug for saving path of fault vehicle.
  + debug for cross Lane.
  + devide 2 part for this class, private update for each situation.
+ + build a basic model to recognize color in traffic light area.
 '''
 
 
