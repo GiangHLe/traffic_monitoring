@@ -54,18 +54,6 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     - Output:
         + A tensor [x,y,ID,frame_num]
     '''
-    
-
-
-
-
-
-
-
-
-
-
-
     tuple_cam = computeCameraCalibration(vp1,vp2,pp)
     
     vid = cv2.VideoCapture(video_path)
@@ -122,18 +110,14 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 })
             final_box=[]
             label=[]
-            scores=[]
-            
+            scores=[]           
 
             # clear this
             if show and mode == 'crossRedLine':
                 cv2.line(pic, (704,680) , (1165,432) , (0,255,255), 3) 
                 cv2.line(pic, (1165,432) , (1900,756) , (0,255,255), 3) 
                 cv2.line(pic, (1900,756) , (1222,1070) , (0,255,255), 3) 
-                cv2.line(pic, (1222,1070) , (704,680) , (0,255,255), 3) 
-            
-            
-            
+                cv2.line(pic, (1222,1070) , (704,680) , (0,255,255), 3)                                     
             
             for b,lb,sc in zip(out_boxes,out_classes,out_scores):
                 if lb in [2,3,5,7]:
@@ -143,24 +127,31 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 if lb == 9 and mode == 'crossRedLine' and capture_light:                    
                     t_x, t_y, b_x, b_y = np.int_(np.round(np.array(b)))
                     capture_light = False
-
+                    
+#             print("len label: {}".format(len(label)))
+#             print(label)
+            
             out_boxes=np.array(final_box)
 
             out_scores=np.array(scores)
 
-            final_boxes=np.column_stack((out_boxes,out_scores))
+            final_boxes=np.column_stack((out_boxes,out_scores,label))
 
             final_boxes = final_boxes[np.logical_and(final_boxes[:, 4] > 0.3, final_boxes[:, 2] -
                                                         final_boxes[:, 0] < 600)]
             # Apply NMS
             indices = utilities.non_max_suppression(final_boxes, 0.9, final_boxes[:, 4])
-
-            out_boxes = [final_boxes[i] for i in indices]
-
+            
+            
+            
+            out_boxes = [final_boxes[i][:5] for i in indices]
+            
+            vehicle_label = [final_boxes[i][5] for i in indices]
+            
+#             print("len outbox: {}".format(out_boxes[0]))
+            
             res_track=tracker.update(np.array(out_boxes))
-
-            # add label in this
-
+    
 
             one_frame = bbox2necess(image = pic, bbox = res_track,frame =frame_num,
                                         shape = video_size)
@@ -176,18 +167,18 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 except:
                     print('can not find traffic light')
                     break
-            for vehicle in one_frame:
+                    
+#             print(len(one_frame))
+            
+            for ind, vehicle in enumerate(one_frame):
                 ID =  int(round(vehicle[2]))
+                label = vehicle_label[ind]
                 centroid = [vehicle[0],vehicle[1]]
                 frame_appear = frame_num
                 bbox = vehicle[4]
                 bbox2d_position = vehicle[5]
 
                 x,y,x_plus_w,y_plus_h = bbox2d_position
-                
-                
-
-
 
                 # set font and color
                 font                   = cv2.FONT_HERSHEY_SIMPLEX
@@ -200,30 +191,37 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                 c_0 = int(round(centroid[0]))
                 c_1 = int(round(centroid[1]))
 
-
-
-
                 # car
                 if label == 2:
-                    image_vehicle = pic[(c_0-150):(c_0+150), \
-                                        (c_1-150):(c_1+150)]
-                # motorbike
-                elif label == 3 :
-                    image_vehicle = pic[(c_0-100):(c_0+100), \
-                                        (c_1-100):(c_1+100)]
-                # bus
-                elif label == 5:
-                    image_vehicle = pic[(c_0-250):(c_0+250), \
-                                        (c_1-250):(c_1+250)]
-                # truck
-                elif label == 2:
                     image_vehicle = pic[(c_0-200):(c_0+200), \
                                         (c_1-200):(c_1+200)]
-
+                    label_text = "car"
+                # motorbike
+                elif label == 3 :
+                    image_vehicle = pic[(c_0-150):(c_0+150), \
+                                        (c_1-150):(c_1+150)]
+                    label_text = "motorbike"
+                # bus
+                elif label == 5:
+                    image_vehicle = pic[(c_0-300):(c_0+300), \
+                                        (c_1-300):(c_1+300)]
+                    label_text = "bus"
+                # truck
+                elif label == 7:
+                    image_vehicle = pic[(c_0-350):(c_0+350), \
+                                        (c_1-350):(c_1+350)]
+                    label_text = "truck"
 
                 if show:
                     cv2.putText(pic,str(ID), 
                                     (c_1 - 10 , c_0 -10), 
+                                    font, 
+                                    fontScale,
+                                    fontColor,
+                                    thickness,
+                                    linetype)
+                    cv2.putText(pic,label_text, 
+                                    (c_1 - 10 , c_0 +10), 
                                     font, 
                                     fontScale,
                                     fontColor,
@@ -271,7 +269,7 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     if show:
                         # cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (255,255,0), 4)
                         cv2.putText(pic, all_vehicle[ID].text, 
-                                    (c_1 - 10 , c_0 +20), 
+                                    (c_1 - 10 , c_0 +30), 
                                     font, 
                                     fontScale,
                                     fontColor,
