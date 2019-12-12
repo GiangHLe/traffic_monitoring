@@ -2,14 +2,15 @@
 need to fix:
  + change cross lane permission into parameter.
  + set time disappear to clean up while running, for higher speed and for rtsp.
- + cross red line, deadline 28/10/2019.
- + build a basic model to recognize color in traffic light area.
+ + gtData for each video and each situation
+    
 finish:
  + debug for speed.
  + debug for fps.
  + debug for saving path of fault vehicle.
  + debug for cross Lane.
  + devide 2 part for this class, private update for each situation.
+ + build a basic model to recognize color in traffic light area.
 '''
 
 
@@ -121,7 +122,7 @@ class Vehicle:
             self._crossLane = True
 
         frame_diff = self.frame[1]-self.frame[0]
-        if frame_diff % 10 != 0:
+        if frame_diff < 10:
             return None
 
         # Make sure car in the area with best camera calibration for best measurement
@@ -156,7 +157,8 @@ class Vehicle:
     def update_for_cross_redline(self, new_centroid, frame_appear, traffic_status,
                                  bbox2D_position, mask, image):
         # this function update for cross redline only
-        
+        self.frame[1] = frame_appear
+        frame_diff = self.frame[1]-self.frame[0]
         # a little delay for make sure the camera can see motorbike lincense plate
         if self.catched and (not self._crossRedLine) and (self._called == 30):
             self.catch_fault_vehicle(self._crossRedLine_path, image)
@@ -165,6 +167,8 @@ class Vehicle:
         # only count when the vehicle get catched
         if self.catched:
             self._called += 1
+        elif frame_diff < 5:
+            return None
         else:
             self.centroids[1] = new_centroid
             # take movement vector of vehicle

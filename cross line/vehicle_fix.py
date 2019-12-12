@@ -54,7 +54,6 @@ class Vehicle:
         # this thing
         self._catch_cross_lane = False
         
-        
         self.allow_lanes = allow_lanes
         self.all_lanes = all_lanes
         
@@ -66,7 +65,6 @@ class Vehicle:
         self._crossLane = kwags.pop('crossLane',False)
         self._problem   = kwags.pop('problem',False)
         
-        self.done = False
         self._called = 0
         if self._catch_cross_lane and (self.lane not in self.allow_lanes) and not self._crossLane:
             self.catch_fault_vehicle(self._crossLane_path, image)

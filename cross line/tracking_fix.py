@@ -170,9 +170,9 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                     
 #             print(len(one_frame))
             
-            for ind, vehicle in enumerate(one_frame):
+            for idx, vehicle in enumerate(one_frame):
                 ID =  int(round(vehicle[2]))
-                label = vehicle_label[ind]
+                label = vehicle_label[idx]
                 centroid = [vehicle[0],vehicle[1]]
                 frame_appear = frame_num
                 bbox = vehicle[4]
@@ -255,13 +255,15 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
                                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 4)
 
                         cv2.rectangle(pic, (x,y), (x_plus_w ,y_plus_h), (0,0,255), 4)
-                        cv2.putText(pic,round(str(all_vehicle[ID].speed),2), 
-                                    (c_1 -10 , c_0 +20), 
+                        cv2.putText(pic,str(round(all_vehicle[ID].speed,2)), 
+                                    (c_1 -10 , c_0 +30), 
                                     font, 
                                     fontScale,
-                                    fontColor,
+                                    (255,255,0),
                                     thickness,
                                     linetype)
+                        cv2.line(pic,(300,451),(1300,451),(0,255,0),thickness)
+                        cv2.line(pic,(300,736),(1300,736),(0,255,0),thickness)
                     all_vehicle[ID].update_for_highway(bbox, centroid, frame_appear, image_vehicle)
 
 
