@@ -69,8 +69,8 @@ def detect_video(yolo, video_type, video_path, output_path, mask_path, mode,
     isOutput = True if output_path != "" else False
     if isOutput:
         video_FourCC = cv2.VideoWriter_fourcc('M','J','P','G')
-        video_size      = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                           int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        video_size   = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                        int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         out = cv2.VideoWriter(output_path, video_FourCC, fps, video_size, 1)
 
     tracker=Sort()

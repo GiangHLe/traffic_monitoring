@@ -54,6 +54,7 @@ class Vehicle:
         # this thing
         self._catch_cross_lane = False
         
+        
         self.allow_lanes = allow_lanes
         self.all_lanes = all_lanes
         
@@ -65,13 +66,12 @@ class Vehicle:
         self._crossLane = kwags.pop('crossLane',False)
         self._problem   = kwags.pop('problem',False)
         
+        self.done = False
         self._called = 0
         if self._catch_cross_lane and (self.lane not in self.allow_lanes) and not self._crossLane:
             self.catch_fault_vehicle(self._crossLane_path, image)
             self._crossLane = True
 
-    def swapCentroid(self, c):
-        return [c[1],c[0]]
 
     def setParemeter4speedMeasure(self, fps, scale, tuple_cam, allow_speed, 
                                     best_performance_range):
@@ -94,8 +94,6 @@ class Vehicle:
         # Assume that there will be no traffic jam on highway
 
         new_centroid = self.swapCentroid(new_centroid)
-
-
         vp1, vp2, vp3, pp, roadPlane, focal = self.tuple_cam
         laneDivLines = self.all_lanes
         self.centroids[1] = new_centroid
@@ -109,6 +107,9 @@ class Vehicle:
         
         # On highway, which car appears more than 20 second and doesn't move
         # => gets in trouble
+        '''
+        Hasn't tested yet
+        '''
         if time_appear >= 20 and np.average(np.array(self.speed)) <= 5 and not self._problem:
             self._problem = True
             self.catch_fault_vehicle(self._problem_path, image)
@@ -148,7 +149,8 @@ class Vehicle:
         self.deadline = deadline
         self.traffic_status = traffic_status
         
-        # rediculous
+        # good :)
+
 
         self.catched = False
         self.text = '' 
@@ -193,3 +195,5 @@ class Vehicle:
         ID, frame,  = self.ID, self.frame[-1]
         cv2.imwrite(src+str(frame)+ "_vehicle_" + str(ID) + ".jpg",image)
 
+    def swapCentroid(self, c):
+        return [c[1],c[0]]
