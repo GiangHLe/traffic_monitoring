@@ -1,5 +1,7 @@
 # Traffic monitoring system by computer vision and machine learning
-The system is in a jupyter notebook in "source code" directory. It is divide into two mode, and need a lot of pre-processing step for different position of a camera. 
+The system is in a jupyter notebook in "source code" directory. For details, please take a look on [our paper](paper.pdf).
+
+It is divide into two mode, and need a lot of pre-processing step for different position of a camera. 
 
 Our system can solve three problem:
 + Overspeed
