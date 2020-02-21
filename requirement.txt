@@ -9,4 +9,5 @@ numba==0.48.0
 scikit-image==0.16.2
 sklearn
 filterpy==1.4.5
+streamlink==1.3.1
 tensorflow-gpu==1.14.0
